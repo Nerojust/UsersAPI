@@ -13,7 +13,7 @@ app.use(bodyparser.urlencoded({ extended: true })); //accept url encoded params
 app.use(require("./routes/user"));
 
 //start server
-var server = app.listen(3000, (err, res) => {
+var server = app.listen(5000, (err, res) => {
   var host = server.address().address;
   var port = server.address().port;
   if (!err) {
