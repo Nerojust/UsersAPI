@@ -6,5 +6,6 @@ var connect = mysql.createConnection({
   password: "",
   database: "NodeJS_DB"
 });
+connect.connect();
 
 module.exports = connect;
