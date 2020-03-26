@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const uuid = require("uuid");
 const connect = require("../utils/config");
+const util = require("../utils/utils");
 
 //Middle ware that is specific to this router
 router.use(function timeLog(req, res, next) {
@@ -66,21 +68,19 @@ function loginUser() {
     );
   };
 }
+
 function registerUser() {
   return function(req, res, next) {
     var post_data = req.body; //get the post parameters
     var uid = uuid.v4(); //get uuid v4
     var plain_password = post_data.password; //get password from post parameter
-    var hash_data = saltHashPassword(plain_password);
+    var hash_data = util.saltHashPassword(plain_password);
     var password = hash_data.passwordHash; //get the hash value
     var salt = hash_data.salt; //get the salt
     var name = post_data.name;
     var email = post_data.email;
-    connect.query("SELECT * FROM user WHERE email =?"[email], function(
-      err,
-      result,
-      fields
-    ) {
+
+    connect.query("SELECT * FROM User WHERE email =?"[email], (err, result) => {
       connect.on("error", function(err) {
         console.log("[MYSQL ERROR]", err);
       });
@@ -90,7 +90,7 @@ function registerUser() {
         connect.query(
           "INSERT INTO `User`(`unique_id`, `name`, `email`, `encrypted_password`, `salt`, `created_at`, `updated_at`) VALUES (?,?,?,?,?,NOW(),NOW())",
           [uid, name, email, password, salt],
-          function(err, result, fields) {
+          (err, result, fields) => {
             connect.on("error", function(err) {
               console.log("[MYSQL ERROR]", err);
               res.json("Registration error ", err);
@@ -108,6 +108,7 @@ function registerUser() {
     });
   };
 }
+
 function getAllUsers() {
   return (req, res, next) => {
     connect.query("SELECT * FROM User", (err, result) => {
@@ -141,36 +142,34 @@ function getSingleUser() {
 }
 function deleteUser() {
   return (req, res, next) => {
-    connect.query("SELECT * FROM User", (err, result) => {
-      if (!err) {
-        //save the length of entries in the database to this variable.
-        var resultFromDB = result.length;
-        var userIdEntered = req.params.id;
-        if (userIdEntered > resultFromDB) {
-          res.json("No user found with this id");
-          return;
-        }
-        //validate it against the parameter entered by the user
-        connect.query(
-          "DELETE FROM User WHERE id =?",
-          [userIdEntered],
-          (err, result) => {
-            if (!err) {
-              res.json("User deleted successfully");
-            } else {
-              res.json(err);
-              return;
-            }
+    connect.query(
+      "SELECT * FROM User WHERE id =?",
+      [req.params.id],
+      (err, result) => {
+        if (err) {
+          res.json(err);
+        } else {
+          if (result.length > 0) {
+            connect.query(
+              "DELETE FROM User WHERE id =?",
+              [req.params.id],
+              (err, result) => {
+                if (!err) {
+                  res.json("User deleted successfully");
+                } else {
+                  res.json(err);
+                  return;
+                }
+              }
+            );
+          } else {
+            res.json("No user found with this id");
           }
-        );
-      } else {
-        res.json(err);
-        return;
+        }
       }
-    });
+    );
   };
 }
-
 
 //send the whole router
 module.exports = router;

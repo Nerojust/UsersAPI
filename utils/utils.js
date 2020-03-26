@@ -27,6 +27,7 @@ function checkHashPassword(user_password, salt) {
   return passwordData;
 }
 
-module.exports = saltHashPassword;
-module.exports = sha512;
-module.exports = checkHashPassword;
+module.exports = {
+  saltHashPassword: saltHashPassword,
+  checkHashPassword: checkHashPassword
+};
