@@ -27,6 +27,10 @@ function verifyHeaderAuthorization(req, res, next) {
     });
   }
 }
+
+router.get("/nero", (req, res)=>{
+    res.status(200).json("Nero endpoint")
+});
 /**
  * register route
  */
